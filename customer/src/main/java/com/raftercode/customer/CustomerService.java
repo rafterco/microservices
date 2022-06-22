@@ -1,9 +1,15 @@
 package com.raftercode.customer;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
-public record CustomerService(CustomerRepostory customerRepostory) {
+@AllArgsConstructor
+public class CustomerService {
+
+    private final CustomerRepostory customerRepostory;
+    private final RestTemplate restTemplate;
 
     public void registerCustomer(CustomerRegistrationRequest customerRegistrationRequest) {
         Customer customer = Customer.builder()
@@ -14,7 +20,16 @@ public record CustomerService(CustomerRepostory customerRepostory) {
 
         //todo: check valid
         //todo: check if email not taken
-
-        customerRepostory.save(customer);
+        customerRepostory.saveAndFlush(customer);
+        //todo: check if fraudster
+        FraudCheckResponse fraudCheckResponse = restTemplate.getForObject(
+                "http://localhost:8081/api/v1/fraud-check/{customerId}",
+                FraudCheckResponse.class,
+                customer.getId()
+        );
+        if (fraudCheckResponse.isFraudster()) {
+            throw new IllegalStateException("fraudster");
+        }
+        //todo: send notification
     }
 }
