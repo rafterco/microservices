@@ -1,4 +1,4 @@
-package com.raftercode.customer;
+package com.raftercode.clients.fraud;
 
 public record FraudCheckResponse(Boolean isFraudster) {
 }
