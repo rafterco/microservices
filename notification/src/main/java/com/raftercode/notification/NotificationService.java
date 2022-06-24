@@ -5,13 +5,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class NotificationService {
 
-    final NotificationRepository notificationRepository;
+    private final NotificationRepository notificationRepository;
 
     public void send(NotificationRequest notificationRequest) {
         notificationRepository.save(
