@@ -2,6 +2,8 @@ package com.raftercode.customer;
 
 import com.raftercode.clients.fraud.FraudCheckResponse;
 import com.raftercode.clients.fraud.FraudClient;
+import com.raftercode.clients.notification.NotificationClient;
+import com.raftercode.clients.notification.NotificationRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -10,9 +12,10 @@ import org.springframework.web.client.RestTemplate;
 @AllArgsConstructor
 public class CustomerService {
 
-    private final CustomerRepostory customerRepostory;
+    private final CustomerRepository customerRepository;
     private final RestTemplate restTemplate;
     private final FraudClient fraudClient;
+    private final NotificationClient notificationClient;
     public void registerCustomer(CustomerRegistrationRequest customerRegistrationRequest) {
         Customer customer = Customer.builder()
                 .firstName(customerRegistrationRequest.firstName())
@@ -22,7 +25,7 @@ public class CustomerService {
 
         //todo: check valid
         //todo: check if email not taken
-        customerRepostory.saveAndFlush(customer);
+        customerRepository.saveAndFlush(customer);
         //todo: check if fraudster
         FraudCheckResponse fraudCheckResponse =
                 fraudClient.isFraudster(customer.getId());
@@ -36,6 +39,22 @@ public class CustomerService {
         if (fraudCheckResponse.isFraudster()) {
             throw new IllegalStateException("fraudster");
         }
+
         //todo: send notification
+        //create notification microservice
+        //setup erueak server add dependency
+        //setup erueka client
+        //setup new db in db server
+        //add new client in clients module
+
+
+        //todo: make it async i.e. add a queue
+        notificationClient.sendNotification(
+                new NotificationRequest(customer.getId(),
+                        customer.getEmail(),
+                        String.format("Welcome %s to raftercode", customer.getFirstName())
+                )
+        );
+
     }
 }
