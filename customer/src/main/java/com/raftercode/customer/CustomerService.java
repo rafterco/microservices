@@ -1,5 +1,6 @@
 package com.raftercode.customer;
 
+import com.raftercode.amqp.RabbitMQMessageProducer;
 import com.raftercode.clients.fraud.FraudCheckResponse;
 import com.raftercode.clients.fraud.FraudClient;
 import com.raftercode.clients.notification.NotificationClient;
@@ -15,7 +16,7 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final RestTemplate restTemplate;
     private final FraudClient fraudClient;
-    private final NotificationClient notificationClient;
+    private final RabbitMQMessageProducer rabbitMQMessageProducer;
 
     public void registerCustomer(CustomerRegistrationRequest customerRegistrationRequest) {
         Customer customer = Customer.builder()
@@ -49,13 +50,24 @@ public class CustomerService {
         //add new client in clients module
 
 
-        //todo: make it async i.e. add a queue
-        notificationClient.sendNotification(
-                new NotificationRequest(customer.getId(),
-                        customer.getEmail(),
-                        String.format("Welcome %s to raftercode", customer.getFirstName())
-                )
+//        notificationClient.sendNotification(
+//                new NotificationRequest(customer.getId(),
+//                        customer.getEmail(),
+//                        String.format("Welcome %s to raftercode", customer.getFirstName())
+//                )
+//        );
+
+        NotificationRequest notificationRequest = new NotificationRequest(
+                customer.getId(),
+                customer.getEmail(),
+                String.format("Hi %s welcome to Raftercode ... ",
+                        customer.getFirstName())
         );
 
+        rabbitMQMessageProducer.publish(
+                notificationRequest,
+                "internal.exchange",
+                "internal.notification.routing-key"
+        );
     }
 }
