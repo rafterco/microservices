@@ -13,7 +13,7 @@ import java.util.Arrays;
 		}
 )
 public class Application {
-
+	//http://localhost:8080/swagger-ui/#/
 	public static void main(String[] args) {
 		ApplicationContext ctx = SpringApplication.run(Application.class, args);
 
